@@ -1,0 +1,102 @@
+on: [push, pull_request]
+name: test
+jobs:
+  test-ubuntu:
+    runs-on: ubuntu-latest
+    steps:
+
+    - name: Checkout code
+      uses: actions/checkout@v2
+      with:
+        submodules: true
+
+    - name: Install Go
+      uses: actions/setup-go@v1
+      with:
+        go-version: 1.14.x
+
+    - name: Install dependencies
+      run: |
+        sudo apt install -y \
+          ninja-build \
+          libssl-dev \
+          libprotobuf-dev \
+          protobuf-compiler
+  
+    - name: Compile GameNetworkingSockets library
+      run: |
+        cd lib/GameNetworkingSockets
+        mkdir build
+        cd build
+        cmake -G Ninja ..
+        ninja
+        echo "::set-env name=LD_LIBRARY_PATH::$(pwd)/src:${LD_LIBRARY_PATH}"
+
+    - name: Run tests
+      run: go test -v
+
+  test-macos:
+    runs-on: macos-latest
+    steps:
+
+    - name: Checkout code
+      uses: actions/checkout@v2
+      with:
+        submodules: true
+
+    - name: Install Go
+      uses: actions/setup-go@v1
+      with:
+        go-version: 1.14.x
+
+    - name: Install dependencies
+      run: |
+        brew install ninja openssl@1.1 protobuf
+  
+    - name: Compile GameNetworkingSockets library
+      run: |
+        cd lib/GameNetworkingSockets
+        mkdir build
+        cd build
+        cmake -G Ninja -DOPENSSL_ROOT_DIR=/usr/local/opt/openssl@1.1 ..
+        ninja
+
+    - name: Run tests
+      run: |
+        go test -v -exec "env LD_LIBRARY_PATH=$(pwd)/lib/GameNetworkingSockets/build/src"
+
+  test-windows:
+    runs-on: windows-latest
+    steps:
+
+    - name: Checkout code
+      uses: actions/checkout@v2
+      with:
+        submodules: true
+
+    - name: Install msys2
+      uses: numworks/setup-msys2@v1
+      with:
+        path-type: inherit
+
+    - name: Install dependencies
+      run: "msys2do 
+        pacman -S --noconfirm
+          mingw-w64-x86_64-gcc
+          mingw-w64-x86_64-go
+          mingw-w64-x86_64-ninja
+          mingw-w64-x86_64-openssl
+          mingw-w64-x86_64-pkg-config
+          mingw-w64-x86_64-protobuf"
+  
+    - name: Compile GameNetworkingSockets library
+      run: |
+        cd lib/GameNetworkingSockets
+        mkdir build
+        cd build
+        msys2do cmake -G Ninja ..
+        msys2do ninja
+        cp src/libGameNetworkingSockets.dll ../../..
+
+    - name: Run tests
+      run: msys2do go test -v

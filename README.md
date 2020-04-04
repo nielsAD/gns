@@ -1,5 +1,6 @@
 GameNetworkingSockets
 =====================
+[![build](https://github.com/nielsAD/gns/workflows/test/badge.svg)](https://github.com/nielsAD/gns/actions/)
 [![GoDoc](https://godoc.org/github.com/nielsAD/gns?status.svg)](https://godoc.org/github.com/nielsAD/gns)
 [![License: MPL 2.0](https://img.shields.io/badge/License-MPL%202.0-brightgreen.svg)](https://opensource.org/licenses/MPL-2.0)
 

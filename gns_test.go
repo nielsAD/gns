@@ -117,8 +117,8 @@ func TestListenSocket(t *testing.T) {
 
 	addr.Port++
 	if l := gns.CreateListenSocketIP(gns.NewIPAddr(&addr), gns.ConfigMap{
-		gns.ConfigTimeoutInitial:   10_000,
-		gns.ConfigTimeoutConnected: 20_000,
+		gns.ConfigTimeoutInitial:   10 * 1000,
+		gns.ConfigTimeoutConnected: 20 * 1000,
 	}); l == gns.InvalidListenSocket {
 		t.Fatal("CreateListenSocketIP with config")
 	} else if !l.Close() {
