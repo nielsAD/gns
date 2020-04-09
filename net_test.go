@@ -188,7 +188,7 @@ func Example() {
 		}
 		defer c.Close()
 
-		c.SetLinger(3)
+		c.SetLinger(-1)
 
 		// Send 100 packets with 1024 bytes payload each
 		p := in[:]

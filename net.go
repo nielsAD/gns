@@ -351,7 +351,7 @@ func (c *Conn) Read(b []byte) (int, error) {
 
 	for c.rmsg == nil {
 		if err != nil {
-			// Empty message queue, return error when empty
+			// Drain message queue, return error when empty
 			select {
 			case msg := <-c.rchan:
 				c.rmsg = msg
@@ -483,6 +483,9 @@ func (c *Conn) Close() error {
 	c.rmut.Lock()
 	if c.rmsg != nil {
 		c.rmsg.Release()
+	}
+	for i := 0; i < len(c.rchan); i++ {
+		(<-c.rchan).Release()
 	}
 	c.rmut.Unlock()
 
@@ -676,7 +679,7 @@ func statusChanged(cb *StatusChangedCallbackInfo) {
 
 		select {
 		case l.achan <- c:
-			// Appended to Accept queue
+			// Appended to Accept() queue
 		default:
 			// Accept buffer full, drop the connection
 			conn.Close(0, "", false)
@@ -708,7 +711,7 @@ func closewaits() {
 		for _, c := range closewait {
 			select {
 			case c.rchan <- nil:
-				// Signal Read that no new messages will be queued
+				// Signal Read() that no new messages will be queued
 			default:
 				closewait[failed] = c
 				failed++
@@ -728,7 +731,7 @@ func poll() {
 		n := pollgroup.ReceiveMessages(m[:])
 		if n == 0 {
 			closewaits()
-			time.Sleep(time.Millisecond * 3)
+			time.Sleep(time.Millisecond * 5)
 			continue
 		}
 
@@ -757,7 +760,7 @@ func poll() {
 
 			select {
 			case c.rchan <- msg:
-				// Appended to Read queue
+				// Appended to Read() queue
 			default:
 				// Read buffer full, drop the message
 				msg.Release()
@@ -766,7 +769,7 @@ func poll() {
 		}
 		connectmut.Unlock()
 
-		time.Sleep(time.Microsecond * 100)
+		time.Sleep(time.Millisecond)
 	}
 	pollw.Done()
 }
