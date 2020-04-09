@@ -539,7 +539,11 @@ func (c *Conn) Close() error {
 		c.rmsg.Release()
 	}
 	for i := 0; i < len(c.rchan); i++ {
-		(<-c.rchan).Release()
+		msg, ok := <-c.rchan
+		if !ok || msg == nil {
+			break
+		}
+		msg.Release()
 	}
 	c.rmut.Unlock()
 

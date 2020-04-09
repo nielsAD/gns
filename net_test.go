@@ -172,9 +172,10 @@ func TestListen(t *testing.T) {
 }
 
 func Example() {
+	// GameNetworkingSockets uses a fixed transmission rate, set to 512K/s
 	cfg := gns.ConfigMap{
-		gns.ConfigSendRateMin: 1024 * 512,
-		gns.ConfigSendRateMax: 1024 * 512,
+		gns.ConfigSendRateMin: 512 * 1024,
+		gns.ConfigSendRateMax: 512 * 1024,
 	}
 
 	l, err := gns.Listen(&net.UDPAddr{IP: net.IP{127, 0, 0, 1}}, cfg)
@@ -183,14 +184,14 @@ func Example() {
 	}
 	defer l.Close()
 
-	// send a burst of 2MiB random bytes with 20ms lag and ~10% packet loss
-	var in [2 * 1024 * 1024]byte
-	rand.Read(in[:])
-
 	gns.SetGlobalConfigValue(gns.ConfigFakePacketLagRecv, 10.0)
 	gns.SetGlobalConfigValue(gns.ConfigFakePacketLagSend, 10.0)
 	gns.SetGlobalConfigValue(gns.ConfigFakePacketLossRecv, 5.0)
 	gns.SetGlobalConfigValue(gns.ConfigFakePacketLossSend, 5.0)
+
+	// send a burst of 2MiB random bytes with 20ms lag and ~10% packet loss
+	var in [2 * 1024 * 1024]byte
+	rand.Read(in[:])
 
 	go func() {
 		c, err := gns.Dial(l.Addr().(*net.UDPAddr), cfg)
@@ -199,6 +200,7 @@ func Example() {
 		}
 		defer c.Close()
 
+		// Linger for as long as it takes
 		c.SetLinger(-1)
 
 		if _, err := io.Copy(c, bytes.NewReader(in[:])); err != nil {
