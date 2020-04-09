@@ -228,55 +228,6 @@ const (
 	ConfigEnumerateDevVars ConfigOption = C.k_ESteamNetworkingConfig_EnumerateDevVars
 
 	//
-	// Settings for SDR relayed connections
-	//
-
-	// [int32 global] If the first N pings to a port all fail, mark that port as unavailable for
-	// a while, and try a different one.  Some ISPs and routers may drop the first
-	// packet, so setting this to 1 may greatly disrupt communications.
-	ConfigSDRClientConsecutitivePingTimeoutsFailInitial ConfigOption = C.k_ESteamNetworkingConfig_SDRClient_ConsecutitivePingTimeoutsFailInitial
-
-	// [int32 global] If N consecutive pings to a port fail, after having received successful
-	// communication, mark that port as unavailable for a while, and try a
-	// different one.
-	ConfigSDRClientConsecutitivePingTimeoutsFail ConfigOption = C.k_ESteamNetworkingConfig_SDRClient_ConsecutitivePingTimeoutsFail
-
-	// [int32 global] Minimum number of lifetime pings we need to send, before we think our estimate
-	// is solid.  The first ping to each cluster is very often delayed because of NAT
-	// routers not having the best route, etc.  Until we've sent a sufficient number
-	// of pings, our estimate is often inaccurate.  Keep pinging until we get this
-	// many pings.
-	ConfigSDRClientMinPingsBeforePingAccurate ConfigOption = C.k_ESteamNetworkingConfig_SDRClient_MinPingsBeforePingAccurate
-
-	// [int32 global] Set all steam datagram traffic to originate from the same
-	// local port. By default, we open up a new UDP socket (on a different local
-	// port) for each relay.  This is slightly less optimal, but it works around
-	// some routers that don't implement NAT properly.  If you have intermittent
-	// problems talking to relays that might be NAT related, try toggling
-	// this flag
-	ConfigSDRClientSingleSocket ConfigOption = C.k_ESteamNetworkingConfig_SDRClient_SingleSocket
-
-	// [global string] Code of relay cluster to force use.  If not empty, we will
-	// only use relays in that cluster.  E.g. 'iad'
-	ConfigSDRClientForceRelayCluster ConfigOption = C.k_ESteamNetworkingConfig_SDRClient_ForceRelayCluster
-
-	// [connection string] For debugging, generate our own (unsigned) ticket, using
-	// the specified  gameserver address.  Router must be configured to accept unsigned
-	// tickets.
-	ConfigSDRClientDebugTicketAddress ConfigOption = C.k_ESteamNetworkingConfig_SDRClient_DebugTicketAddress
-
-	// [global string] For debugging.  Override list of relays from the config with
-	// this set (maybe just one).  Comma-separated list.
-	ConfigSDRClientForceProxyAddr ConfigOption = C.k_ESteamNetworkingConfig_SDRClient_ForceProxyAddr
-
-	// [global string] For debugging.  Force ping times to clusters to be the specified
-	// values.  A comma separated list of <cluster>=<ms> values.  E.g. "sto=32,iad=100"
-	//
-	// This is a dev configuration value, you probably should not let users modify it
-	// in production.
-	ConfigSDRClientFakeClusterPing ConfigOption = C.k_ESteamNetworkingConfig_SDRClient_FakeClusterPing
-
-	//
 	// Log levels for debuging information.  A higher priority
 	// (lower numeric value) will cause more stuff to be printed.
 	//
@@ -285,7 +236,6 @@ const (
 	ConfigLogLevelMessage       ConfigOption = C.k_ESteamNetworkingConfig_LogLevel_Message       // [connection int32] log each message send/recv
 	ConfigLogLevelPacketGaps    ConfigOption = C.k_ESteamNetworkingConfig_LogLevel_PacketGaps    // [connection int32] dropped packets
 	ConfigLogLevelP2PRendezvous ConfigOption = C.k_ESteamNetworkingConfig_LogLevel_P2PRendezvous // [connection int32] P2P rendezvous messages
-	ConfigLogLevelSDRRelayPings ConfigOption = C.k_ESteamNetworkingConfig_LogLevel_SDRRelayPings // [global int32] Ping relays
 )
 
 // ConfigType is the interface to ESteamNetworkingConfigDataType
