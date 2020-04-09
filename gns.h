@@ -1064,6 +1064,16 @@ enum {
 	k_nSteamNetworkingSend_UseCurrentThread = 16,
 };
 
+enum {
+	/// Max size of a single message that we can SEND.
+	/// Note: We might be wiling to receive larger messages,
+	/// and our peer might, too.
+	 k_cbMaxSteamNetworkingSocketsMessageSizeSend = 512 * 1024,
+
+	 // Max size of a message that we are wiling to *receive*.
+	k_cbMaxMessageSizeRecv = k_cbMaxSteamNetworkingSocketsMessageSizeSend*2
+};
+
 /// A message that has been received.
 typedef struct SteamNetworkingMessage_t
 {

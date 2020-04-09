@@ -21,6 +21,7 @@ var (
 	ErrInvalidPollGroup    = errors.New("gns: Invalid pollgroup")
 	ErrClosedConnection    = errors.New("gns: Use of closed connection")
 	ErrClosedListener      = errors.New("gns: Use of closed listener")
+	ErrMessageTooBig       = errors.New("gns: Message too big in size")
 	ErrMessageDropped      = errors.New("gns: Message dropped due to buffer limit")
 	ErrDeadline            = &errDeadline{}
 )
@@ -411,9 +412,39 @@ func (c *Conn) Read(b []byte) (int, error) {
 // after a fixed time limit; see SetDeadline and SetWriteDeadline.
 func (c *Conn) Write(b []byte) (int, error) {
 	c.mut.Lock()
+	nod := c.nodelay
+	c.mut.Unlock()
+
+	flags := SendReliable
+	if nod {
+		flags |= SendNoNagle
+	}
+
+	n, l := 0, len(b)
+	for l > 0 {
+		lim := l
+		if lim > MaxMessageSizeSend {
+			lim = MaxMessageSizeSend
+		}
+
+		nn, err := c.SendMessage(b[:lim], flags)
+		n += nn
+		l -= nn
+
+		if err != nil {
+			return n, err
+		}
+
+		b = b[nn:]
+	}
+	return n, nil
+}
+
+// SendMessage to the remote host on the connection.
+func (c *Conn) SendMessage(b []byte, flags SendFlags) (int, error) {
+	c.mut.Lock()
 	han := c.handle
 	wdl := c.wdeadline
-	nod := c.nodelay
 	c.mut.Unlock()
 
 	if han == InvalidConnection {
@@ -422,19 +453,42 @@ func (c *Conn) Write(b []byte) (int, error) {
 		return 0, ErrDeadline
 	} else if len(b) == 0 {
 		return 0, nil
+	} else if len(b) > MaxMessageSizeSend {
+		return 0, ErrMessageTooBig
 	}
 
-	flags := SendReliable
-	if nod {
-		flags |= SendNoNagle
-	}
+	for {
+		_, res := han.SendMessage(b, flags)
+		switch res {
+		case ResultLimitExceeded:
+			c.mut.Lock()
+			wdl := c.wdeadline
+			c.mut.Unlock()
 
-	_, res := han.SendMessage(b, flags)
-	if res == ResultOK {
-		return len(b), nil
-	}
+			sleep := wdl.Sub(time.Now())
+			if !wdl.IsZero() && sleep < 0 {
+				return 0, ErrDeadline
+			}
 
-	return 0, res
+			if stat := han.QuickConnectionStatus(); stat != nil && stat.QueueTime > 0 && (sleep < 0 || stat.QueueTime < sleep) {
+				sleep = stat.QueueTime
+			}
+			if sleep < 0 || sleep > time.Second {
+				sleep = time.Second
+			}
+
+			time.Sleep(sleep)
+
+		case ResultOK:
+			return len(b), nil
+		case ResultInvalidParam, ResultInvalidState:
+			return 0, ErrClosedConnection
+		case ResultNoConnection:
+			return 0, io.EOF
+		default:
+			return 0, res
+		}
+	}
 }
 
 // Close closes the connection.

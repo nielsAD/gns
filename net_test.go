@@ -172,17 +172,28 @@ func TestListen(t *testing.T) {
 }
 
 func Example() {
-	l, err := gns.Listen(&net.UDPAddr{IP: net.IP{127, 0, 0, 1}}, nil)
+	cfg := gns.ConfigMap{
+		gns.ConfigSendRateMin: 1024 * 512,
+		gns.ConfigSendRateMax: 1024 * 512,
+	}
+
+	l, err := gns.Listen(&net.UDPAddr{IP: net.IP{127, 0, 0, 1}}, cfg)
 	if err != nil {
 		log.Fatal("Listen: ", err)
 	}
 	defer l.Close()
 
-	var in [1024 * 100]byte
+	// send a burst of 2MiB random bytes with 20ms lag and ~10% packet loss
+	var in [2 * 1024 * 1024]byte
 	rand.Read(in[:])
 
+	gns.SetGlobalConfigValue(gns.ConfigFakePacketLagRecv, 10.0)
+	gns.SetGlobalConfigValue(gns.ConfigFakePacketLagSend, 10.0)
+	gns.SetGlobalConfigValue(gns.ConfigFakePacketLossRecv, 5.0)
+	gns.SetGlobalConfigValue(gns.ConfigFakePacketLossSend, 5.0)
+
 	go func() {
-		c, err := gns.Dial(l.Addr().(*net.UDPAddr), nil)
+		c, err := gns.Dial(l.Addr().(*net.UDPAddr), cfg)
 		if err != nil {
 			log.Fatal("Dial: ", err)
 		}
@@ -190,18 +201,12 @@ func Example() {
 
 		c.SetLinger(-1)
 
-		// Send 100 packets with 1024 bytes payload each
-		p := in[:]
-		for len(p) > 0 {
-			if _, err := c.Write(p[:1024]); err != nil {
-				log.Fatal("Copy: ", err)
-			}
-			p = p[1024:]
-			time.Sleep(time.Millisecond / 10)
+		if _, err := io.Copy(c, bytes.NewReader(in[:])); err != nil {
+			log.Fatal("Copy: ", err)
 		}
 	}()
 
-	conn, err := l.Accept()
+	conn, err := l.AcceptGNS()
 	if err != nil {
 		log.Fatal("Accept: ", err)
 	}

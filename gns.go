@@ -11,6 +11,7 @@ import (
 	"fmt"
 	"net"
 	"sync/atomic"
+	"time"
 	"unsafe"
 )
 
@@ -749,6 +750,15 @@ const (
 	SendUseCurrentThread SendFlags = C.k_nSteamNetworkingSend_UseCurrentThread
 )
 
+// Message constants
+const (
+	// Max size of a single message that we can SEND.
+	MaxMessageSizeSend = C.k_cbMaxSteamNetworkingSocketsMessageSizeSend
+
+	// Max size of a message that we are wiling to *receive*.
+	MaxMessageSizeRecv = C.k_cbMaxMessageSizeRecv
+)
+
 // Message is the interface to SteamNetworkingMessage_t
 //
 // A message that has been received.
@@ -1131,7 +1141,7 @@ func (s *quickConnectionStatus) unpack() *QuickConnectionStatus {
 		PendingUnreliable:       (int)(s.m_cbPendingUnreliable),
 		PendingReliable:         (int)(s.m_cbPendingReliable),
 		SentUnackedReliable:     (int)(s.m_cbSentUnackedReliable),
-		QueueTime:               (Timestamp)(s.m_usecQueueTime),
+		QueueTime:               (time.Duration)(s.m_usecQueueTime) * time.Microsecond,
 	}
 }
 
@@ -1202,7 +1212,7 @@ type QuickConnectionStatus struct {
 	/// in it waiting for Nagle.  (This will always be less than one packet, because as soon
 	/// as we have a complete packet we would send it.)  In that case, we might be ready
 	/// to send data now, and this value will be 0.
-	QueueTime Timestamp
+	QueueTime time.Duration
 }
 
 // static library variables, set using Init()
