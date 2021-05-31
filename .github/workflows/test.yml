@@ -30,7 +30,7 @@ jobs:
         cd build
         cmake -G Ninja ..
         ninja
-        echo "::set-env name=LD_LIBRARY_PATH::$(pwd)/src:${LD_LIBRARY_PATH}"
+        echo "LD_LIBRARY_PATH=$(pwd)/src:${LD_LIBRARY_PATH}" >> $GITHUB_ENV
 
     - name: Run tests
       run: go test -v
