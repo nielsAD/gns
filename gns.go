@@ -1183,7 +1183,7 @@ func InitLibrary(id *Identity) error {
 
 	var err C.SteamNetworkingErrMsg
 	if C.GameNetworkingSockets_Init(id, &err) {
-		globsock = unsafe.Pointer(C.SteamAPI_SteamNetworkingSockets_v009())
+		globsock = unsafe.Pointer(C.SteamAPI_SteamNetworkingSockets_v008())
 		globutil = unsafe.Pointer(C.SteamAPI_SteamNetworkingUtils_v003())
 		if globsock == nil || globutil == nil {
 			return errors.New("gns: API initialization error")
@@ -1251,7 +1251,7 @@ func RunCallbacks(callback StatusChangedCallback) {
 	}
 
 	statusChangedCallbacks[idx] = callback
-	C.SteamAPI_ISteamNetworkingSockets_RunCallbacks(globutil)
+	C.SteamAPI_ISteamNetworkingSockets_RunConnectionStatusChangedCallbacks((C.intptr_t)((uintptr)(globsock)), (C.FSteamNetConnectionStatusChangedCallback)(C.goStatusChangedCallback), (C.intptr_t)(idx))
 	statusChangedCallbacks[idx] = nil
 }
 
