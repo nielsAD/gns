@@ -1187,7 +1187,6 @@ extern bool SteamAPI_ISteamNetworkingSockets_SetCertificate( ISteamNetworkingSoc
 typedef void (*FSteamNetConnectionStatusChangedCallback)( SteamNetConnectionStatusChangedCallback_t *pInfo, intptr_t context );
 extern void SteamAPI_ISteamNetworkingSockets_RunConnectionStatusChangedCallbacks ( intptr_t instancePtr, FSteamNetConnectionStatusChangedCallback callback, intptr_t context );
 
-
 // ISteamNetworkingUtils
 extern ISteamNetworkingUtils *SteamAPI_SteamNetworkingUtils_v003();
 extern SteamNetworkingMessage_t * SteamAPI_ISteamNetworkingUtils_AllocateMessage( ISteamNetworkingUtils* self, int cbAllocateBuffer );
