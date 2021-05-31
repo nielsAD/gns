@@ -1154,7 +1154,7 @@ extern bool GameNetworkingSockets_Init( const SteamNetworkingIdentity *pIdentity
 extern void GameNetworkingSockets_Kill();
 
 // ISteamNetworkingSockets
-extern ISteamNetworkingSockets *SteamAPI_SteamNetworkingSockets_v008();
+extern ISteamNetworkingSockets *SteamAPI_SteamNetworkingSockets_v009();
 extern HSteamListenSocket SteamAPI_ISteamNetworkingSockets_CreateListenSocketIP( ISteamNetworkingSockets* self, const SteamNetworkingIPAddr *localAddress, int nOptions, const SteamNetworkingConfigValue_t * pOptions );
 extern HSteamNetConnection SteamAPI_ISteamNetworkingSockets_ConnectByIPAddress( ISteamNetworkingSockets* self, const SteamNetworkingIPAddr *address, int nOptions, const SteamNetworkingConfigValue_t * pOptions );
 extern EResult SteamAPI_ISteamNetworkingSockets_AcceptConnection( ISteamNetworkingSockets* self, HSteamNetConnection hConn );
