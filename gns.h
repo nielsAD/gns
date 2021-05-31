@@ -1184,8 +1184,7 @@ extern bool SteamAPI_ISteamNetworkingSockets_GetCertificateRequest( ISteamNetwor
 extern bool SteamAPI_ISteamNetworkingSockets_SetCertificate( ISteamNetworkingSockets* self, const void * pCertificate, int cbCertificate, SteamNetworkingErrMsg *errMsg );
 
 // Callback dispatch mechanism when using the lib in standalone mode.
-typedef void (*FSteamNetConnectionStatusChangedCallback)( SteamNetConnectionStatusChangedCallback_t *pInfo, intptr_t context );
-extern void SteamAPI_ISteamNetworkingSockets_RunConnectionStatusChangedCallbacks ( intptr_t instancePtr, FSteamNetConnectionStatusChangedCallback callback, intptr_t context );
+extern void SteamAPI_ISteamNetworkingSockets_RunCallbacks( ISteamNetworkingSockets* self );
 
 // ISteamNetworkingUtils
 extern ISteamNetworkingUtils *SteamAPI_SteamNetworkingUtils_v003();
